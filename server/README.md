@@ -30,7 +30,7 @@ This is written for Vercel's plain `api/` functions (Vite, static sites and the 
 ### Spotify (optional)
 
 1. Create an app at the [Spotify developer dashboard](https://developer.spotify.com/dashboard) with the redirect URI `http://127.0.0.1:8888/callback`.
-2. Run `node scripts/spotify-auth.js <client id> <client secret>` and log in. It prints a refresh token that can only read what's currently playing.
+2. Run `node scripts/spotify-auth.js <client id> <client secret>` and log in. It prints a refresh token that can only read what's currently playing. If another app already uses port 8888, add a port at the end (e.g. `8889`) and register the matching redirect URI (`http://127.0.0.1:8889/callback`) in your Spotify app.
 3. Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` and `SPOTIFY_REFRESH_TOKEN` in Vercel.
 
 ## What `GET /api/pc-stats` returns
