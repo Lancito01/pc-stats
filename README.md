@@ -23,7 +23,7 @@ Every 5 seconds while you're at the PC (once a minute after 5 minutes away), onl
 ### What it never reads or sends
 
 - **Which keys you press.** Key presses are counted through Raw Input. The key code is only used to tell a new press from a held key repeating, then thrown away.
-- **Window titles, URLs, file names or anything on screen.** For apps it only looks at the focused exe's file name, and only reports it if it's on your list.
+- **Window titles, URLs, file names or anything on screen.** For apps it looks at the focused exe's file name, and only reports it if it's on your `[Apps]` list. For a listed app with `-` title rules, it also checks the window title for the text in those rules, on your PC. Either way only the names and descriptions you wrote are sent, never the title itself.
 - **Your IP, PC name, username or location.** The server only stores the fields above.
 
 ## How it's protected
@@ -72,6 +72,23 @@ The tray tooltip and `pc-stats.log` say why:
 code.exe=VS Code | code editor
 obs64.exe=OBS | recording or streaming
 ```
+
+### Showing more than the app's name
+
+Lines starting with `-` under an app change what's shown when that app's window title contains some text. This is handy for browsers, where the exe is the same whatever you're doing:
+
+```ini
+[Apps]
+zen.exe=Zen Browser | browsing
+- youtube = YouTube | watching videos
+- netflix = | watching a show
+```
+
+- **The text matches anywhere in the title, ignoring case.** `youtube` matches "YouTube — Zen Browser" and "Some video - YouTube".
+- **Order matters.** Rules are checked top to bottom and the first match wins. If none match, the app's own line is shown: here, "Zen Browser · browsing".
+- **Leave a rule's name out to keep the app's.** Above, a Netflix tab shows "Zen Browser · watching a show".
+- **Leave the app's own name out to show it only on a match.** With `zen.exe=` on the app line, a Netflix or YouTube tab is reported but every other tab isn't.
+- **Rules only apply to their own app.** An exe that isn't listed is never reported, whatever its title says.
 
 `MouseDpi` should match your mouse's DPI so the distance comes out right.
 

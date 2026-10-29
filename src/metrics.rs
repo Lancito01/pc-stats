@@ -13,7 +13,7 @@ use windows_sys::Win32::System::Threading::{
     OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION,
 };
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
-use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
+use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowTextW, GetWindowThreadProcessId};
 
 use crate::util::wide;
 
@@ -150,13 +150,17 @@ pub fn idle_seconds() -> u64 {
     (unsafe { GetTickCount() }.wrapping_sub(info.dwTime) / 1000) as u64
 }
 
-/// The file name of the focused app's exe, e.g. "code.exe". Window titles are never read.
-pub fn focused_exe() -> Option<String> {
+/// The focused app's exe file name (e.g. "chrome.exe") and its window title. The title is only
+/// matched against the app's `-` title rules in pc-stats.ini on this PC; it's never sent.
+pub fn focused_window() -> Option<(String, String)> {
     unsafe {
         let hwnd: HWND = GetForegroundWindow();
         if hwnd.is_null() {
             return None;
         }
+        let mut title = [0u16; 512];
+        let title_len = GetWindowTextW(hwnd, title.as_mut_ptr(), title.len() as i32).max(0) as usize;
+        let title = String::from_utf16_lossy(&title[..title_len]);
         let mut pid = 0u32;
         GetWindowThreadProcessId(hwnd, &mut pid);
         let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
@@ -171,6 +175,6 @@ pub fn focused_exe() -> Option<String> {
             return None;
         }
         let path = String::from_utf16_lossy(&path[..len as usize]);
-        path.rsplit('\\').next().map(|name| name.to_string())
+        path.rsplit('\\').next().map(|name| (name.to_string(), title))
     }
 }

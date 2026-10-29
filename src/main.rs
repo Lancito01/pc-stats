@@ -75,8 +75,8 @@ struct App {
     counters: Counters,
     keys_down: [bool; 256],
     load: Load,
-    /// Samples per listed app focused since the last update; unlisted apps are never counted
-    app_samples: HashMap<String, u32>,
+    /// Samples per listed app (label, what it is) focused since the last update; unlisted apps are never counted
+    app_samples: HashMap<(String, String), u32>,
     signer: Signer,
     tray: Tray,
     sending: Arc<AtomicBool>,
@@ -251,10 +251,8 @@ fn sample(app: &mut App) {
     app.counters.roll_over();
     app.load.sample();
     if app.config.share_apps && metrics::idle_seconds() < 60 {
-        if let Some(exe) = metrics::focused_exe() {
-            if app.config.app_for(&exe).is_some() {
-                *app.app_samples.entry(exe.to_ascii_lowercase()).or_default() += 1;
-            }
+        if let Some(found) = metrics::focused_window().and_then(|(exe, title)| app.config.app_for(&exe, &title)) {
+            *app.app_samples.entry(found).or_default() += 1;
         }
     }
 }
@@ -317,7 +315,7 @@ fn send(app: &mut App) {
     }
 
     let load = app.load.take();
-    let top_app = app.app_samples.drain().max_by_key(|(_, n)| *n).and_then(|(exe, _)| app.config.app_for(&exe));
+    let top_app = app.app_samples.drain().max_by_key(|(_, n)| *n).map(|(found, _)| found);
     if app.counters.paused || app.sending.load(Ordering::SeqCst) {
         return;
     }
@@ -497,7 +495,7 @@ fn self_test(endpoint: Option<String>) {
     }
     let config = Config::default();
     let counters = Counters { day: local_day(), clicks: 0, keys: 0, scrolls: 0, mickeys: 0.0, paused: false };
-    let app = metrics::focused_exe().and_then(|exe| config.app_for(&exe));
+    let app = metrics::focused_window().and_then(|(exe, title)| config.app_for(&exe, &title));
     let ts = unix_seconds();
     let body = snapshot(&config, &counters, load.take(), app, ts);
 
