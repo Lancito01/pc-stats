@@ -1,0 +1,7 @@
+/target
+# Created next to the exe at runtime
+pc-stats.ini
+pc-stats.log
+pc-stats.state
+last-sent.json
+public-key.txt
