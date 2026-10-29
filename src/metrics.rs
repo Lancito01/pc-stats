@@ -30,6 +30,7 @@ pub struct Load {
     cpu_samples: u32,
     gpu_total: f64,
     gpu_samples: u32,
+    last: (Option<u8>, Option<u8>),
 }
 
 impl Load {
@@ -42,6 +43,7 @@ impl Load {
             cpu_samples: 0,
             gpu_total: 0.0,
             gpu_samples: 0,
+            last: (None, None),
         };
         unsafe {
             if PdhOpenQueryW(std::ptr::null(), 0, &mut load.query) != 0 {
@@ -73,12 +75,15 @@ impl Load {
         }
     }
 
-    /// Average CPU and GPU percentages since the last call.
+    /// Average CPU and GPU percentages since the last call. With no new sample in between
+    /// (updates and samples can line up that way), the previous reading is repeated.
     pub fn take(&mut self) -> (Option<u8>, Option<u8>) {
         let avg = |total: f64, n: u32| (n > 0).then(|| (total / n as f64).round().clamp(0.0, 100.0) as u8);
-        let result = (avg(self.cpu_total, self.cpu_samples), avg(self.gpu_total, self.gpu_samples));
+        let cpu = avg(self.cpu_total, self.cpu_samples).or(self.last.0);
+        let gpu = avg(self.gpu_total, self.gpu_samples).or(self.last.1);
         (self.cpu_total, self.cpu_samples, self.gpu_total, self.gpu_samples) = (0.0, 0, 0.0, 0);
-        result
+        self.last = (cpu, gpu);
+        self.last
     }
 
     fn value(&self, counter: PDH_HCOUNTER) -> Option<f64> {

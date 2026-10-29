@@ -72,9 +72,9 @@ Strings may contain letters, numbers, punctuation, symbols and spaces, but no co
 | Body missing, not text, or over 2 KB | `400` |
 | Timestamp more than 120 s from the server's clock, or the signature doesn't verify | `401` |
 | Body isn't valid JSON, has an unknown field, a value out of range, or a `ts` that differs from the header | `400` |
-| `ts` isn't at least 20 s after the last accepted update (replays and floods) | `409` |
+| `ts` isn't at least 4 s after the last accepted update (replays and floods) | `409` |
 | Accepted and stored | `204` |
 
 The signature is checked before the body is parsed. The `ts` comparison and the write happen atomically, so two copies of the same update can't both be accepted.
 
-The app treats `409` as harmless, and shows the others in its tray tooltip and log. It sends once a minute by default (30 to 600 seconds), so a server can consider the PC offline after about 2½ minutes of silence.
+The app treats `409` as harmless, and shows the others in its tray tooltip and log. It sends every 5 seconds by default (5 to 600) while the user is active, and once a minute after 5 minutes without input, so a server can consider the PC offline after about 2½ minutes of silence.

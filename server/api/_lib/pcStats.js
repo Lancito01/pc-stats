@@ -7,8 +7,8 @@ import { createPublicKey, verify } from "node:crypto";
 export const KEY = "pc-stats:latest";
 export const MAX_BODY_BYTES = 2048;
 export const MAX_CLOCK_SKEW = 120; // seconds the PC's clock may be off from the server's
-export const MIN_INTERVAL = 20; // seconds between accepted updates
-export const ONLINE_WINDOW = 150; // no update for this long means offline (the agent sends every 60s)
+export const MIN_INTERVAL = 4; // seconds between accepted updates (the app sends every 5s at most)
+export const ONLINE_WINDOW = 150; // no update for this long means offline (the app sends at least once a minute)
 export const AWAY_AFTER = 300; // seconds without keyboard or mouse input before showing "away"
 
 // What the site serves. The agent can send more, but anything not listed here stays private.

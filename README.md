@@ -8,12 +8,12 @@ It's written in Rust against the Windows APIs directly: one ~270 KB exe, about 7
 
 ## What gets sent
 
-About once a minute, only what's switched on in `pc-stats.ini`:
+Every 5 seconds while you're at the PC (once a minute after 5 minutes away), only what's switched on in `pc-stats.ini`:
 
 | Setting | Sent | Shown on the site as |
 |---|---|---|
 | `Uptime` | seconds since boot, seconds since the last input | "on for 4d 10h", active or away |
-| `Load` | CPU and GPU % (averaged over the minute), RAM used/total | three small bars |
+| `Load` | CPU and GPU % (averaged since the last update), RAM used/total | three small bars |
 | `Input` | clicks, key presses and scrolls today | totals |
 | `MouseDistance` | how far the mouse moved today | "1.3 km of mouse" |
 | `Apps` | the focused app's name and description, **only if it's listed under `[Apps]`** | "in VS Code: code editor" |

@@ -22,6 +22,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::time::Instant;
 
 use windows_sys::Win32::Foundation::{GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM};
 use windows_sys::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
@@ -52,7 +53,11 @@ const WM_SENT: u32 = WM_APP + 2;
 const SAMPLE_TIMER: usize = 1;
 const SEND_TIMER: usize = 2;
 const SOON_TIMER: usize = 3;
-const SAMPLE_MS: u32 = 5_000;
+// Often enough that every update has a fresh CPU/GPU reading, even at the 5 s minimum
+const SAMPLE_MS: u32 = 2_000;
+// While away, one update a minute is plenty: the site shows "away" either way
+const AWAY_INTERVAL_SECONDS: u64 = 60;
+const SAVE_EVERY_SECONDS: u64 = 60;
 // Matches the site: no input for this long counts as away, and apps aren't reported then
 const AWAY_SECONDS: u64 = 300;
 
@@ -78,6 +83,8 @@ struct App {
     status: String,
     last_body: Option<String>,
     interval: u32,
+    last_sent: Option<Instant>,
+    last_saved: Instant,
 }
 
 thread_local! {
@@ -166,6 +173,8 @@ fn main() {
             status: "Starting up".into(),
             last_body: None,
             interval,
+            last_sent: None,
+            last_saved: Instant::now(),
         };
         refresh_tray(&mut app);
         APP.with(|cell| *cell.borrow_mut() = Some(app));
@@ -298,7 +307,14 @@ fn send(app: &mut App) {
         unsafe { SetTimer(app.hwnd, SEND_TIMER, app.interval * 1000, None) };
     }
     app.counters.roll_over();
-    app.counters.save();
+    if app.last_saved.elapsed().as_secs() >= SAVE_EVERY_SECONDS {
+        app.counters.save();
+        app.last_saved = Instant::now();
+    }
+    let away = metrics::idle_seconds() >= AWAY_SECONDS;
+    if away && app.last_sent.is_some_and(|sent| sent.elapsed().as_secs() < AWAY_INTERVAL_SECONDS) {
+        return;
+    }
 
     let load = app.load.take();
     let top_app = app.app_samples.drain().max_by_key(|(_, n)| *n).and_then(|(exe, _)| app.config.app_for(&exe));
@@ -325,6 +341,7 @@ fn send(app: &mut App) {
     let endpoint = app.config.endpoint.clone();
     let sending = app.sending.clone();
     let hwnd = app.hwnd as isize;
+    app.last_sent = Some(Instant::now());
     sending.store(true, Ordering::SeqCst);
     std::thread::spawn(move || {
         let status = net::post(&endpoint, ts, &body, &signature).unwrap_or_else(|error| {

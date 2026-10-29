@@ -28,7 +28,7 @@ impl Default for Config {
         Config {
             // Nothing is sent until this is set
             endpoint: String::new(),
-            interval: 60,
+            interval: 5,
             share_uptime: true,
             share_load: true,
             share_input: true,
@@ -79,7 +79,7 @@ impl Config {
             }
             match key.as_str() {
                 "endpoint" if value.starts_with("https://") => c.endpoint = value.to_string(),
-                "intervalseconds" => c.interval = value.parse::<u32>().unwrap_or(c.interval).clamp(30, 600),
+                "intervalseconds" => c.interval = value.parse::<u32>().unwrap_or(c.interval).clamp(5, 600),
                 "uptime" => c.share_uptime = flag(value, c.share_uptime),
                 "load" => c.share_load = flag(value, c.share_load),
                 "input" => c.share_input = flag(value, c.share_input),
@@ -100,7 +100,8 @@ impl Config {
             "; Where updates go: your site's ingest address, e.g. https://example.com/api/pc-stats/ingest".into(),
             "; Nothing is sent while this is empty. Only https:// addresses are accepted.".into(),
             format!("Endpoint={}", self.endpoint),
-            "; Seconds between updates (30 to 600)".into(),
+            "; Seconds between updates while you're at the PC (5 to 600). After 5 minutes away it".into(),
+            "; drops to one a minute until you're back.".into(),
             format!("IntervalSeconds={}", self.interval),
             "; 1 = share it, 0 = never send it".into(),
             "; How long the PC has been on, and whether I've used it in the last 5 minutes".into(),

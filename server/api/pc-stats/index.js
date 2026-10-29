@@ -36,6 +36,6 @@ export default async function handler(req, res) {
 
     // Cached at the edge, so visitors share one answer instead of each hitting Redis and Spotify.
     // `at` lets the page move the song's progress bar along from when this was generated.
-    res.setHeader("Cache-Control", "public, s-maxage=15, stale-while-revalidate=30");
+    res.setHeader("Cache-Control", "public, s-maxage=4, stale-while-revalidate=6");
     res.status(200).json({ at: now, pc, music });
 }
