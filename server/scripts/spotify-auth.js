@@ -29,6 +29,8 @@ const authorizeUrl = `https://accounts.spotify.com/authorize?${new URLSearchPara
     redirect_uri: redirectUri,
     scope: "user-read-currently-playing",
     state,
+    // Always show the consent screen, so an earlier half-finished login can't get in the way
+    show_dialog: "true",
 })}`;
 
 // What Spotify's `error` values usually mean for this script
@@ -47,7 +49,11 @@ const server = createServer(async (req, res) => {
     const error = url.searchParams.get("error");
     if (error) {
         const hint = hints[error] ?? "Run the script again.";
-        console.error(`Spotify sent back an error instead of a login: ${error}\n${hint}`);
+        const description = url.searchParams.get("error_description");
+        console.error(`Spotify sent back an error instead of a login: ${error}${description ? ` (${description})` : ""}`);
+        // Everything Spotify sent, for working out undocumented errors like server_error
+        console.error("Full reply:", Object.fromEntries(url.searchParams));
+        console.error(hint);
         reply(res, 400, `Spotify said "${error}". ${hint}`);
         return server.close();
     }
