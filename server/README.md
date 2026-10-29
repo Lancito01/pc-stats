@@ -10,8 +10,10 @@ Two Vercel functions that receive updates from PC Stats and serve them to your s
 ## Adding it to a Vercel project
 
 1. Copy `api/` into your project's root, next to any `api/` you already have. Files starting with `_` aren't turned into routes, so `api/_lib/` stays private.
-2. The code is ES modules: your `package.json` needs `"type": "module"` (or rename the files to `.mjs`). It runs on Node 18 or newer and has no dependencies.
-3. In Vercel, add **Upstash Redis** from the Marketplace (Storage tab). It sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`. A direct Upstash database works too, with `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+2. The code is ES modules: your `package.json` needs `"type": "module"` (or rename the files to `.mjs`). It runs on Node 18 or newer.
+3. In Vercel, add a Redis database from the Storage tab. Either kind works:
+   - **Upstash**, which sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` when set up on Upstash directly). No packages needed.
+   - **Redis** (a regular Redis server), which sets `REDIS_URL`. Also run `npm install @redis/client`.
 4. Add `STATS_PUBLIC_KEY`: the JSON key from the app's tray menu (**Copy public key**).
 5. If your site is a single-page app with a catch-all rewrite, keep `/api/` out of it, e.g. in `vercel.json`:
 

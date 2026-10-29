@@ -46,7 +46,7 @@ Being open source doesn't weaken any of this: none of the protection depends on 
 
 You need Windows 10 or 11, and a site that can run the [server side](server/). It's ready-made for Vercel; [PROTOCOL.md](PROTOCOL.md) covers other hosts.
 
-1. **Set up the server.** Follow [server/README.md](server/README.md): copy its `api/` folder into your project, add Upstash Redis, and deploy.
+1. **Set up the server.** Follow [server/README.md](server/README.md): copy its `api/` folder into your project, add a Redis database, and deploy.
 2. **Build the app:** `cargo build --release` (Rust with the MSVC toolchain). Move `target\release\pc-stats.exe` into its own folder; its settings, log and today's counts are saved next to it.
 3. **Run it.** On first run it opens `pc-stats.ini`. Set `Endpoint` to your site's ingest address, e.g. `https://example.com/api/pc-stats/ingest`, and save.
 4. **Connect the key.** Right-click the tray dot (green while sharing), pick **Copy public key**, and set it as `STATS_PUBLIC_KEY` on your site. On Vercel that's an environment variable, followed by a redeploy.
