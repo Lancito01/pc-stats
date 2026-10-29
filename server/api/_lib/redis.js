@@ -26,7 +26,9 @@ async function overConnection(command) {
     connection ??= (async () => {
         // Only loaded here, so projects on Upstash don't need the package
         const { createClient } = await import("@redis/client");
-        const client = createClient({ url: process.env.REDIS_URL });
+        // RESP2 replies the way Upstash's REST API does (HGETALL as a flat list); the
+        // client's default, RESP3, would hand back a map instead
+        const client = createClient({ url: process.env.REDIS_URL, RESP: 2 });
         client.on("error", (error) => console.error("Redis connection error:", error));
         await client.connect();
         return client;
