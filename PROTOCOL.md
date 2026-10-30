@@ -44,12 +44,13 @@ The private key is a non-exportable CNG key named `pc-stats` in the user's Micro
 
 ## Body
 
-Only `v` and `ts` are always present; the rest depend on what the user shares.
+Only `v`, `ts` and `interval` are always present; the rest depend on what the user shares.
 
 | Field | Type | Range | Meaning |
 |---|---|---|---|
 | `v` | integer | `1` | Protocol version |
 | `ts` | integer | Unix seconds | Same as `X-Stats-Timestamp` |
+| `interval` | integer | 5 – 600 | Seconds until the next update (60 or more while away), so a site can animate between readings |
 | `uptime` | integer | 0 – 10 years | Seconds since boot |
 | `idle` | integer | 0 – 10 years | Seconds since the last keyboard or mouse input |
 | `cpu` | integer | 0 – 100 | CPU %, averaged since the last update |

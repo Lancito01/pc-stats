@@ -13,6 +13,7 @@ export const AWAY_AFTER = 300; // seconds without keyboard or mouse input before
 
 // What the site serves. The agent can send more, but anything not listed here stays private.
 export const PUBLIC_FIELDS = [
+    "interval",
     "uptime",
     "cpu",
     "gpu",
@@ -66,6 +67,7 @@ const YEAR = 365 * 24 * 60 * 60;
 const FIELDS = {
     v: (v) => v === 1,
     ts: int(1_600_000_000, 4_000_000_000),
+    interval: int(5, 600), // seconds until the app's next update, so the site can glide between the two
     uptime: int(0, 10 * YEAR), // seconds since boot
     idle: int(0, 10 * YEAR), // seconds since the last keyboard or mouse input
     cpu: int(0, 100), // percent

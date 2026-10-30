@@ -260,7 +260,11 @@ fn sample(app: &mut App) {
 /// The JSON body for one update. Only what pc-stats.ini allows goes in.
 fn snapshot(config: &Config, counters: &Counters, load: (Option<u8>, Option<u8>), app: Option<(String, String)>, ts: u64) -> String {
     let idle = metrics::idle_seconds();
-    let mut fields = vec!["\"v\":1".to_string(), format!("\"ts\":{ts}")];
+    // Seconds until the next update, so the site can glide between the two. While away the
+    // send timer still ticks every interval, but only one tick a minute actually sends.
+    let interval = u64::from(config.interval);
+    let next = if idle >= AWAY_SECONDS { AWAY_INTERVAL_SECONDS.div_ceil(interval) * interval } else { interval };
+    let mut fields = vec!["\"v\":1".to_string(), format!("\"ts\":{ts}"), format!("\"interval\":{}", next.min(600))];
     if config.share_uptime {
         fields.push(format!("\"uptime\":{}", metrics::uptime_seconds()));
         fields.push(format!("\"idle\":{idle}"));
